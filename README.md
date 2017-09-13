@@ -45,3 +45,8 @@ python3 main.py -d -i images/moon.jpg
 ```
 
 Baby can Moon is certainly a cat, and `kot-or-not` NN things the same.
+
+
+## Roadmap
+
+* Implement a self learning feature from input images
