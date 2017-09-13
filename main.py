@@ -1,10 +1,11 @@
+import argparse
 import h5py
 import algorithms
 
 import numpy as np
 from scipy import ndimage, misc
 
-num_px = 0
+num_px = 64
 
 
 def load_data():
@@ -15,54 +16,74 @@ def load_data():
 
     labels = labels.reshape((1, labels.shape[0]))
 
-    global num_px
-    num_px = data[0].shape[0]
-
     return data, labels
 
 
 def process_image(fname, weigths, bias):
-    fname = 'images/' + fname
     img = np.array(ndimage.imread(fname, flatten=False))
     res = misc.imresize(
         img, size=(num_px, num_px)).reshape((1, num_px * num_px * 3)).T
 
-    prediction, activation = algorithms.predict(weigths, bias, res)
+    prediction = algorithms.predict(weigths, bias, res)
 
-    return prediction, activation
+    return prediction
 
 
-def dump_model(weights, bias):
+def dump_model(weights, bias, verbose=False):
     np.savetxt('weights', weights)
-    np.savetxt('bias', bias)
+    if verbose: print(f'SAVED: weights {weights.shape}')
+
+    np.savetxt('bias', (bias, ))
+    if verbose: print(f'SAVED: bias {bias}')
 
 
-def load_model():
-    return np.load('weights'), np.load('bias')
+def load_model(verbose=False):
+    weights = np.loadtxt('weights')
+    if verbose: print(f'LOADED: weights {weights.shape}')
+
+    bias = np.loadtxt('bias')
+    if verbose: print(f'LOADED: bias {bias}')
+
+    return weights, bias
 
 
-def main():
-    data, labels = load_data()
+def main(args):
+    verbose = True
 
-    # Dataset standardization
-    flatten_data = data.reshape(data.shape[0], -1).T
-    training_set = flatten_data / 255.0
+    if args.retrain:
+        if verbose: print('retraining model')
+        data, labels = load_data()
 
-    # Train
-    costs, prediction, weights, bias, lrate, niter = algorithms.model(
-        training_set, labels, niter=5000, lrate=0.01, verbose=True)
+        # Dataset standardization
+        flatten_data = data.reshape(data.shape[0], -1).T
+        training_set = flatten_data / 255.0
 
-    # 2000,  .005, 99.04306220095694, 0.14087207570310153
-    # 5000,  .01,  100.0,             0.03149755317976998
-    # 1000,  .01,  98.56459330143541, 0.12497148000976802
+        # Train
+        niter = 1000
+        lrate = 0.005
 
-    dump_model(weights, bias)
+        costs, prediction, weights, bias, lrate, niter = algorithms.model(
+            training_set, labels, niter, lrate, verbose)
 
-    print(process_image('r1.jpg', weights, bias))
-    print(process_image('r2.jpg', weights, bias))
-    print(process_image('r3.jpg', weights, bias))
-    print(process_image('r4.jpg', weights, bias))
+        # Dumb a new model
+        dump_model(weights, bias, verbose)
+
+    
+    if args.dump:
+        if verbose: print('loading model')
+        weights, bias = load_model(verbose)
+
+    if args.input:
+        print(process_image(args.input, weights, bias))
+
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Cat or not neural network')
+    parser.add_argument('-d', '--dump', action='store_true', help='use model dump')
+    parser.add_argument('-r', '--retrain', action='store_true', help='retrain model')
+    parser.add_argument('-i', '--input', help='path to input image')
+    
+    args = parser.parse_args()
+
+    main(args)
