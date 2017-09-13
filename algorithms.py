@@ -52,13 +52,9 @@ def predict(weights, bias, data):
     activation = sigmoid(np.dot(weights.T, data) + bias)
 
     for i in range(activation.shape[1]):
-        # prediction[0][i] = 0 if activation[0][i] <= 0.5 else 1
-        if activation[0][i] <= 0.5:
-            prediction[0][i] = 0
-        else:
-            prediction[0][i] = 1
+        prediction[0][i] = 0 if activation[0][i] <= 0.5 else 1
 
-    return prediction, activation
+    return prediction
 
 
 def model(data, labels, niter, lrate, verbose):
