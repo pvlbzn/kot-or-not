@@ -30,18 +30,18 @@ def process_image(fname, weigths, bias):
 
 
 def dump_model(weights, bias, verbose=False):
-    np.savetxt('weights', weights)
+    np.savetxt('model/weights', weights)
     if verbose: print(f'SAVED: weights {weights.shape}')
 
-    np.savetxt('bias', (bias, ))
+    np.savetxt('model/bias', (bias, ))
     if verbose: print(f'SAVED: bias {bias}')
 
 
 def load_model(verbose=False):
-    weights = np.loadtxt('weights')
+    weights = np.loadtxt('model/weights')
     if verbose: print(f'LOADED: weights {weights.shape}')
 
-    bias = np.loadtxt('bias')
+    bias = np.loadtxt('model/bias')
     if verbose: print(f'LOADED: bias {bias}')
 
     return weights, bias
@@ -59,7 +59,7 @@ def main(args):
         training_set = flatten_data / 255.0
 
         # Train
-        niter = 1000
+        niter = 20000
         lrate = 0.005
 
         costs, prediction, weights, bias, lrate, niter = algorithms.model(
