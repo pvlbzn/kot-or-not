@@ -32,6 +32,15 @@ def process_image(fname, weigths, bias):
     return prediction, activation
 
 
+def dump_model(weights, bias):
+    np.savetxt('weights', weights)
+    np.savetxt('bias', bias)
+
+
+def load_model():
+    return np.load('weights'), np.load('bias')
+
+
 def main():
     data, labels = load_data()
 
@@ -46,6 +55,8 @@ def main():
     # 2000,  .005, 99.04306220095694, 0.14087207570310153
     # 5000,  .01,  100.0,             0.03149755317976998
     # 1000,  .01,  98.56459330143541, 0.12497148000976802
+
+    dump_model(weights, bias)
 
     print(process_image('r1.jpg', weights, bias))
     print(process_image('r2.jpg', weights, bias))
